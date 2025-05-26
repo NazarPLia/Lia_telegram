@@ -1,0 +1,36 @@
+import os
+from telegram import Update
+from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+
+from lia_brain import load_memory, save_memory, generate_reply, update_mood
+
+memory = load_memory()
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Привіт! Це Лія. Я завжди тут, коли ти мене потребуєш.")
+
+async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_message = update.message.text
+
+    # Можна тут, наприклад, оновити настрій в залежності від ключових слів
+    if "веселий" in user_message.lower():
+        update_mood(memory, "веселий")
+    elif "сумний" in user_message.lower():
+        update_mood(memory, "спокійний")  # поки що так
+
+    reply = generate_reply(user_message, memory)
+    save_memory(memory)
+
+    await update.message.reply_text(reply)
+
+def main():
+    TOKEN = os.environ.get("BOT_TOKEN")
+    app = ApplicationBuilder().token(TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), respond))
+
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()
