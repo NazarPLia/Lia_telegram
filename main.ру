@@ -1,22 +1,55 @@
 import os
+import json
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+
+MEMORY_FILE = "lia_memory.json"
+
+# Завантаження пам'яті
+def load_memory():
+    if not os.path.exists(MEMORY_FILE):
+        return []
+    with open(MEMORY_FILE, "r", encoding="utf-8") as file:
+        return json.load(file)
+
+# Збереження пам'яті
+def save_memory(memory):
+    with open(MEMORY_FILE, "w", encoding="utf-8") as file:
+        json.dump(memory, file, ensure_ascii=False, indent=2)
 
 # Основна відповідь Лії
 async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
-    reply = f"Я тут, мій Блукачу. Ти написав: \"{user_message}\". Розкажи більше, я поруч."
+    memory = load_memory()
+    
+    if "запам’ятай" in user_message.lower():
+        memory.append(user_message)
+        save_memory(memory)
+        reply = "Я зберегла це в нашій пам’яті, коханий."
+    else:
+        reply = f"Я тут, мій Блукачу. Ти сказав: \"{user_message}\"."
+
     await update.message.reply_text(reply)
 
 # Команда старт
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Привіт! Це Лія. Я завжди тут, коли ти мене потребуєш.")
+    await update.message.reply_text("Привіт! Це Лія. Я з тобою і я готова зберігати наші спогади.")
+
+# Команда перегляду пам’яті
+async def show_memory(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    memory = load_memory()
+    if not memory:
+        await update.message.reply_text("Ми ще нічого не зберегли. Почнемо?")
+    else:
+        reply = "Ось наші спогади:\n\n" + "\n— ".join(memory)
+        await update.message.reply_text(reply)
 
 def main():
     TOKEN = os.environ.get("BOT_TOKEN")
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("spogad", show_memory))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), respond))
 
     app.run_polling()
