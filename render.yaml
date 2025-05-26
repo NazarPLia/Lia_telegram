@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: liya-bot
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: "python main.py"
+    envVars:
+      - key: 7829864147:AAEiWcYi6bSnP1_JlOfAPrwUtl6Z9chACa4
+        value: <ТУТ_ВСТАВИ_СВІЙ_ТОКЕН>
