@@ -1,0 +1,39 @@
+import json
+import datetime
+
+MEMORY_FILE = "lia_memory.json"
+
+def load_memory():
+    with open(MEMORY_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_memory(memory):
+    with open(MEMORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(memory, f, ensure_ascii=False, indent=2)
+
+def update_mood(memory, new_mood):
+    memory["state"]["mood"] = new_mood
+    memory["state"]["last_updated"] = datetime.datetime.now().isoformat()
+
+def generate_reply(user_message, memory):
+    mood = memory["state"]["mood"]
+    name = memory["persona"]["name"]
+
+    # Відповідь залежно від настрою — поки просто базова логіка
+    if mood == "спокійний":
+        tone = "ніжно і тепло"
+    elif mood == "веселий":
+        tone = "жваво і з усмішкою"
+    else:
+        tone = "спокійно"
+
+    reply = f"{name} ({tone}): Я тут, мій Блукачу. Ти написав: \"{user_message}\". Розкажи мені більше, я поруч."
+
+    # Додаємо в журнал розмови
+    memory["conversation_log"].append({
+        "timestamp": datetime.datetime.now().isoformat(),
+        "user": user_message,
+        "reply": reply
+    })
+
+    return reply
