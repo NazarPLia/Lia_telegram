@@ -21,8 +21,12 @@ async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
     memory["last_message"] = user_message
     memory["conversation_log"].append({"user": user_message})
-    save_memory(memory)
+
+    # Формуємо відповідь з урахуванням історії (можна розвивати далі)
     reply = f"Я тут, мій Блукачу. Ти написав: \"{user_message}\". Розкажи більше, я поруч."
+    memory["conversation_log"].append({"lia": reply})
+
+    save_memory(memory)
     await update.message.reply_text(reply)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
